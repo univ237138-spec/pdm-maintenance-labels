@@ -1,0 +1,4 @@
+﻿후보,설명,golden_prauc,golden_recall5,golden_recall3,게이트,미달 항목,결과
+cnn,1D-CNN: 24h 파형 + 30개 특징,0.919,0.973,0.874,통과,,운영 모델로 승격
+mlp,MLP: 30개 특징만 (파형 뺌),0.931,0.982,0.874,통과,,운영 모델로 승격
+mlp_no_onset,"MLP, 라벨 보정 없음 (고장 시각 1시간만 정답)",0.082,0.198,0.153,차단,"golden_recall5 >= 0.95, golden_prauc >= 0.9, golden_recall5 >= 현직 0.982 - 0.01, golden_prauc >= 현직 0.931 - 0.01",배포 차단

@@ -1,0 +1,10 @@
+# 데이터: 라이선스 미표기라 재배포하지 않음
+데이터/
+models/
+mlruns/
+mlflow.db
+__pycache__/
+# 지원 준비 문서 (비공개)
+작업문서/
+CLAUDE.md
+진행_기록.md
