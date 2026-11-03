@@ -17,7 +17,8 @@
 
 - Microsoft Azure Predictive Maintenance 샘플 데이터 ([Kaggle](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)). 원래 Azure 저장소 주소는 현재 접속되지 않습니다.
 - **연구용 가상 데이터**라 실제 공장보다 점수가 높게 나옵니다.
-- 라이선스가 명시되어 있지 않아(Kaggle 표기 Unknown) **데이터는 이 저장소에 포함하지 않습니다.** 위 링크에서 받아 `데이터/raw/`에 넣으세요.
+- 라이선스가 명시되어 있지 않습니다(Kaggle 표기 Unknown). 원본 CSV 전체는 이 저장소에 포함하지 않으니, 위 링크에서 받아 `데이터/raw/`에 넣으세요.
+- 예외: 대시보드 배포를 위해 `app/data/`에 시험 기간(2015년 11~12월)의 센서값과 정비·에러·고장 기록 일부, 모델 결과를 넣었습니다. 출처는 위 Microsoft 샘플 데이터이며, 권리자 요청이 있으면 삭제합니다.
 
 | 파일 | 크기 | 내용 |
 |---|---|---|
