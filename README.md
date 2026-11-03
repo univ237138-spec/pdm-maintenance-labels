@@ -11,6 +11,7 @@
 | 3+. 파형 효과 검증 | CNN에서 파형을 뺀 버전과 seed 3회 비교 | 파형 이득 없음 → 운영에는 더 단순한 모델 선택 |
 | 4. 판단 근거 | SHAP(특징 + 시간별 파형 기여) | 경보마다 "이유 3줄" + 센서 그래프 |
 | 5. 운영 준비 | MLflow 등록, 골든셋 게이트, PSI drift | 라벨 보정을 뺀 모델(포착률 20%)을 게이트가 자동 차단 |
+| 6. 대시보드 | 정비팀장용 아침 점검 브리핑 (Streamlit) | 상위 5대 + 위험도 0.9 이상 정책으로 고장 110/111 포착 |
 
 ## 데이터
 
@@ -105,6 +106,28 @@ SHAP GradientExplainer로 특징별 기여와 24시간 파형의 시간별 기�
 
 처음에는 부품 교체 경과 시간도 감시했는데, 평소 주간에도 PSI 0.27로 오경보가 났습니다. 이 값은 정비 일정에 따라 원래 바뀌는 값이므로 감시 대상에서 빼고, **측정값(센서·에러)만 감시**하도록 정책을 정했습니다.
 
+## 6. 아침 점검 브리핑 대시보드 — `app/app.py`
+
+정비팀장이 매일 아침 07시에 보는 한 페이지입니다. 실제 설비 관리 화면을 참고해 설계했습니다.
+
+- **ISA-101 고성능 HMI**: 회색 바탕을 쓰고 색은 이상 상태에만 씁니다(빨강 = 위험, 주황 = 주의, 파랑 = 선택). 평소 화면이 조용해야 이상이 바로 눈에 띕니다.
+- **IBM Maximo Health/Predict**: 고장 확률 높은 설비를 모은 작업 큐, 설비 상세의 점수와 기여 요인을 참고했습니다.
+- **Siemens Senseye · AWS Monitron**: 위험 순 정렬 목록과 정상/주의/위험 3단계 상태를 참고했습니다.
+
+| 영역 | 내용 |
+|---|---|
+| 상단 | 운영 모델 버전과 게이트 통과 여부, 센서 drift 상태 |
+| 요약 | 점검 추천 · 위험 · 주의 · 정상 대수 |
+| 점검 작업 큐 | 상위 5대 + 위험도 0.9 이상 전부 (4단계 놓친 고장 분석에서 나온 정책). 이 정책으로 고장 110/111 포착 (하루 5대 고정 시 109) |
+| 설비 현황 맵 | 100대를 한눈에 보는 격자, 이상 설비만 색 표시 |
+| 설비 상세 | 위험도, 순위, SHAP 근거 3줄, 14일 위험도 추이, 부품 교체 경과(정상 중앙값 대비), 최근 30일 정비·에러 이력 |
+| 센서 24시간 | 학습 기간 정상 운전의 5~95% 범위를 띠로 표시, 범위 밖 시점 강조 |
+| 검증 모드 | 과거 데이터 재생이라 다음 24시간 실제 고장 여부, 놓친 고장, 지난 30일 포착률 표시 |
+
+![대시보드](결과/step6_dashboard.png)
+
+화면은 운영 모델(MLflow `champion`, 파형 뺀 MLP)의 결과를 `src/step6_dashboard_data.py`로 미리 계산한 `app/data/`만 읽습니다. 그래서 배포 환경에 PyTorch나 MLflow가 필요 없습니다.
+
 ## 실행 방법
 
 ```bash
@@ -116,6 +139,8 @@ python src/step3_models.py      # IsolationForest, 1D-CNN 학습 (CPU 약 3분)
 python src/step3_ablation.py    # 파형 유무 비교, seed 3회 (CPU 약 13분)
 python src/step4_explain.py
 python src/step5_mlops.py       # MLflow 기록은 실행마다 새로 시작
+python src/step6_dashboard_data.py
+streamlit run app/app.py
 mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
@@ -129,7 +154,8 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 ## 폴더
 
 ```
-src/       단계별 스크립트 (step2 ~ step5)
+src/       단계별 스크립트 (step2 ~ step6)
+app/       Streamlit 대시보드 (app/requirements.txt는 배포용)
 결과/       그림, 경보 근거, 게이트·drift 결과
 데이터/     (제외) raw CSV, 중간 산출물
 models/    (제외) 학습된 모델
